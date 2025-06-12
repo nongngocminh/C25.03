@@ -1,7 +1,9 @@
 using System.Collections;
 using System.Collections.Generic;
+using System.Drawing;
 using System.Runtime.ConstrainedExecution;
 using UnityEngine;
+using UnityEngine.UIElements;
 
 public class Character : MonoBehaviour
 {
@@ -9,20 +11,23 @@ public class Character : MonoBehaviour
     [SerializeField] private LayerMask groundLayer;
     [SerializeField] private Animator animator;
     [SerializeField] private float speed = 250;
-    [SerializeField] private float jumpForce = 350;
+    [SerializeField] private float jumpForce = 400;
 
     private bool isGrounded = true;
     private bool isJumping = false;
     private bool isAttack = false;
+    private bool isDead = false;
 
     private float horizontal;
     private string currentAnimName;
-    
+    private int coins = 0;
+    public Vector3 checkPoint;
 
     // Start is called before the first frame update
     void Start()
     {
-        
+        CheckPoint();
+        OnInit();
     }
 
     // Update is called once per frame
@@ -33,6 +38,11 @@ public class Character : MonoBehaviour
         // -1 -> 0 -> 1
         horizontal = Input.GetAxisRaw("Horizontal");
 
+        if (isDead)
+        {
+            return;
+        }
+        
         if (isAttack)
         {
             rb.velocity = Vector2.zero;
@@ -86,9 +96,18 @@ public class Character : MonoBehaviour
         }
     }
 
+    public void OnInit()
+    {
+        isDead = false;
+        isAttack = false;
+
+        transform.position = checkPoint;
+        ChangeAnim("idle");
+    }
+
     private bool CheckGrounded()
     {
-        Debug.DrawLine(transform.position, transform.position + Vector3.down * 1.1f, Color.red);
+        Debug.DrawLine(transform.position, transform.position + Vector3.down * 1.1f, UnityEngine.Color.red);
 
         RaycastHit2D hit = Physics2D.Raycast(transform.position, Vector2.down, 1.1f, groundLayer);
 
@@ -137,6 +156,26 @@ public class Character : MonoBehaviour
             animator.ResetTrigger(animName);
             currentAnimName = animName;
             animator.SetTrigger(currentAnimName);
+        }
+    }
+
+    internal void CheckPoint()
+    {
+        checkPoint = transform.position;
+    }
+
+    private void OnTriggerEnter2D(Collider2D collision)
+    {
+        if (collision.tag == "Coins")
+        {
+            coins++;
+            Destroy(collision.gameObject);
+        }
+        if (collision.tag == "DeadZone")
+        {
+            isDead = true;
+            ChangeAnim("die");
+            Invoke(nameof(OnInit), 0.5f);
         }
     }
 }
