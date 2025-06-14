@@ -5,13 +5,16 @@ using System.Runtime.ConstrainedExecution;
 using UnityEngine;
 using UnityEngine.UIElements;
 
-public class Character : MonoBehaviour
+public class Character : Characters
 {
     [SerializeField] private Rigidbody2D rb;
     [SerializeField] private LayerMask groundLayer;
-    [SerializeField] private Animator animator;
     [SerializeField] private float speed = 250;
     [SerializeField] private float jumpForce = 400;
+
+    [SerializeField] private Kunai kunaiPrefab;
+    [SerializeField] private Transform throwPoint;
+    [SerializeField] private GameObject attackArea;
 
     private bool isGrounded = true;
     private bool isJumping = false;
@@ -19,16 +22,8 @@ public class Character : MonoBehaviour
     private bool isDead = false;
 
     private float horizontal;
-    private string currentAnimName;
     private int coins = 0;
     public Vector3 checkPoint;
-
-    // Start is called before the first frame update
-    void Start()
-    {
-        CheckPoint();
-        OnInit();
-    }
 
     // Update is called once per frame
     void FixedUpdate()
@@ -96,13 +91,28 @@ public class Character : MonoBehaviour
         }
     }
 
-    public void OnInit()
+    public override void OnInit()
     {
+        base.OnInit();
         isDead = false;
         isAttack = false;
 
         transform.position = checkPoint;
         ChangeAnim("idle");
+        DeactiveAttack();
+
+        CheckPoint();
+    }
+
+    public override void OnDespawn()
+    {
+        base.OnDespawn();
+        OnInit();
+    }
+
+    public override void OnDeath()
+    {
+        base.OnDeath();
     }
 
     private bool CheckGrounded()
@@ -127,6 +137,8 @@ public class Character : MonoBehaviour
         ChangeAnim("attack");
         isAttack = true;
         Invoke(nameof(ResetAttack), 0.5f);
+        ActiveAttack();
+        Invoke(nameof(DeactiveAttack), 0.5f);
     }
 
     private void Throw()
@@ -134,6 +146,8 @@ public class Character : MonoBehaviour
         ChangeAnim("throw");
         isAttack = true;
         Invoke(nameof(ResetAttack), 0.5f);
+
+        Instantiate(kunaiPrefab, throwPoint.position, throwPoint.rotation);
     }
 
     private void Jump()
@@ -145,23 +159,23 @@ public class Character : MonoBehaviour
 
     private void ResetAttack()
     {
-        ChangeAnim("ilde");
+        ChangeAnim("idle");
         isAttack = false;
-    }
-
-    private void ChangeAnim(string animName)
-    {
-        if (currentAnimName != animName) 
-        { 
-            animator.ResetTrigger(animName);
-            currentAnimName = animName;
-            animator.SetTrigger(currentAnimName);
-        }
     }
 
     internal void CheckPoint()
     {
         checkPoint = transform.position;
+    }
+
+    private void ActiveAttack()
+    {
+        attackArea.SetActive(true);
+    }
+    
+    private void DeactiveAttack()
+    {
+        attackArea.SetActive(false);
     }
 
     private void OnTriggerEnter2D(Collider2D collision)
@@ -175,7 +189,7 @@ public class Character : MonoBehaviour
         {
             isDead = true;
             ChangeAnim("die");
-            Invoke(nameof(OnInit), 0.5f);
+            Invoke(nameof(OnInit), 1f);
         }
     }
 }
