@@ -6,6 +6,7 @@ using UnityEngine;
 public class Kunai : MonoBehaviour
 {
     public Rigidbody2D rb;
+    public GameObject hitVFX;
 
     // Start is called before the first frame update
     void Start()
@@ -29,6 +30,7 @@ public class Kunai : MonoBehaviour
         if (collision.tag == "Enemy")
         {
             collision.gameObject.GetComponent<Characters>().OnHit(30f);
+            Instantiate(hitVFX, transform.position, transform.rotation);
             OnDespawn();
         }
     }

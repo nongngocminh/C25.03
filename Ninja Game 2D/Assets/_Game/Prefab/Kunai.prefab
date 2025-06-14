@@ -120,6 +120,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   rb: {fileID: 8260336677627049447}
+  hitVFX: {fileID: 5679821723308853842, guid: 8e1902e3abea8194c989cb375b61b43b, type: 3}
 --- !u!1 &5520419766340243612
 GameObject:
   m_ObjectHideFlags: 0

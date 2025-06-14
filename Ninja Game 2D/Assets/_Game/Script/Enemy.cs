@@ -26,7 +26,7 @@ public class Enemy : Characters
     // Update is called once per frame
     private void Update()
     {
-        if (currentState != null) 
+        if (currentState != null && !isDeath) 
         {
             currentState.OnExecute(this);
         }
@@ -43,6 +43,7 @@ public class Enemy : Characters
     public override void OnDespawn()
     {
         base.OnDespawn();
+        Destroy(healthBar.gameObject);
         Destroy(gameObject);
     }
 
